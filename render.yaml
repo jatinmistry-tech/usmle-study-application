@@ -31,7 +31,7 @@ services:
     plan: free
     buildCommand: npm ci --include=dev && npm run build -w @usmle/shared && npm run build -w @usmle/bff
     startCommand: npm run start -w @usmle/bff
-    healthCheckPath: /ready
+    healthCheckPath: /health
     envVars:
       - key: NODE_VERSION
         value: 24
@@ -59,12 +59,8 @@ services:
     # Static sites are free; omit plan (compute plans apply to Node services).
     # buildCommand: npm ci --include=dev && npm run build -w @usmle/shared && npm run build -w @usmle/web
     buildCommand: >-
-      npm ci --include=dev &&
-        ROLLDOWN_VERSION=$(node -p "require('rolldown/package.json').version") &&
-        npm install --no-save --package-lock=false "@rolldown/binding-linux-x64-gnu@$ROLLDOWN_VERSION" &&
-        npm run build -w @usmle/shared &&
-        npm run build -w @usmle/web
-
+      npm ci --include=dev && ROLLDOWN_VERSION=$(node -p "require('rolldown/package.json').version") && npm install --no-save --package-lock=false "@rolldown/binding-linux-x64-gnu@$ROLLDOWN_VERSION" && npm run build -w @usmle/shared && npm run build -w @usmle/web
+     #npm ci --include=dev && ROLLDOWN_VERSION=$(node -p "require('rolldown/package.json').version") && npm install --no-save --package-lock=false "@rolldown/binding-linux-x64-gnu@$ROLLDOWN_VERSION" && npm run build -w @usmle/shared && npm run build -w @usmle/web
     staticPublishPath: apps/web/dist
     routes:
       - type: rewrite
