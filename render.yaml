@@ -3,11 +3,11 @@ services:
   - type: web
     name: usmle-qa-api
     branch: main
-    autoDeployTrigger: false
+    autoDeployTrigger: off
     runtime: node
     plan: free
     # Free web services do not support preDeployCommand. Apply migrations last.
-    buildCommand: npm ci --include=dev && npm run build -w @usmle/shared && npm run build -w @usmle/api && npm run db:migrate
+    buildCommand: npm ci --include=dev && npm run build -w @usmle/shared && npm run build -w @usmle/api
     startCommand: npm run start -w @usmle/api
     healthCheckPath: /ready
     envVars:
@@ -26,7 +26,7 @@ services:
   - type: web
     name: usmle-qa-bff
     branch: main
-    autoDeployTrigger: false
+    autoDeployTrigger: off
     runtime: node
     plan: free
     buildCommand: npm ci --include=dev && npm run build -w @usmle/shared && npm run build -w @usmle/bff
@@ -48,16 +48,23 @@ services:
         value: 8000
       - key: API_KEY
         fromService:
-          name: usmle-api
+          name: usmle-qa-api
           type: web
           envVarKey: API_KEY
   - type: web
     name: usmle-qa-web
     branch: main
-    autoDeployTrigger: false
+    autoDeployTrigger: off
     runtime: static
     # Static sites are free; omit plan (compute plans apply to Node services).
-    buildCommand: npm ci --include=dev && npm run build -w @usmle/shared && npm run build -w @usmle/web
+    # buildCommand: npm ci --include=dev && npm run build -w @usmle/shared && npm run build -w @usmle/web
+    buildCommand: >-
+      npm ci --include=dev &&
+        ROLLDOWN_VERSION=$(node -p "require('rolldown/package.json').version") &&
+        npm install --no-save --package-lock=false "@rolldown/binding-linux-x64-gnu@$ROLLDOWN_VERSION" &&
+        npm run build -w @usmle/shared &&
+        npm run build -w @usmle/web
+
     staticPublishPath: apps/web/dist
     routes:
       - type: rewrite
